@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Monitoring System</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .popup.show {
+      display: block;
+    }
+  </style>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!--    <script>-->
+<!--        $(document).ready(function() {-->
+<!--            $('form').submit(function(event) {-->
+<!--                event.preventDefault(); // Prevent form submission-->
+
+<!--                var formData = new FormData(this);-->
+
+<!--                $.ajax({-->
+<!--                    url: '/select_video',-->
+<!--                    type: 'POST',-->
+<!--                    data: formData,-->
+<!--                    processData: false,-->
+<!--                    contentType: false,-->
+<!--                    success: function(response) {-->
+<!--                        $('#message').text(response); // Update message element-->
+<!--                    },-->
+<!--                    error: function(xhr, status, error) {-->
+<!--                        console.error(error); // Handle error if needed-->
+<!--                    }-->
+<!--                });-->
+<!--            });-->
+<!--        });-->
+<!--    </script>-->
+</head>
+<body>
+  <header>
+    <h1 class="text-center">Vehicle Monitoring System</h1>
+  </header>
+
+  <div style="display: flex; align-items: center; flex-direction: column; justify-content: center; height: 70vh">
+
+
+  <div class="container">
+    <div class="row mt-4">
+      <div class="col-lg-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" action="/select_video">
+              <input type="file" name="video">
+                <input type="submit" value="Upload">
+            </form>
+
+          </div>
+        </div>
+      </div>
+        <div id="message"></div> <!-- Container for the message -->
+
+<!--      <div class="col-lg-4">-->
+<!--        <div class="card text-center">-->
+<!--          <div class="card-body">-->
+<!--            <form method="POST" enctype="multipart/form-data" action="/process_video">-->
+<!--              <input type = "submit" class="btn btn-primary" value= "Start Process"></input>-->
+<!--            </form>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+      <div class="col-lg-4">
+        <div class="card text-center">
+          <div class="card-body">
+
+            <form method="GET" action="/download">
+              <input type = "submit" value = "Download Output" class="btn btn-primary"></input>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="videoPopup" class="popup">
+    <p>Video has been selected!</p>
+  </div>
+
+  <div id="processPopup" class="popup">
+    <p>Please select a video first.</p>
+  </div>
+</div>
+  <footer class="mt-4">
+    <div class="container">
+      <p>Put instructions here</p>
+    </div>
+  </footer>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    function selectVideo() {
+      // Perform video selection logic here
+      document.getElementById("videoPopup").classList.add("show");
+    }
+
+    function startProcess() {
+      // Perform start process logic here
+      var videoSelected = true; // Assume video has been selected
+
+      if (videoSelected) {
+        // Show spinner in the process popup
+        document.getElementById("processPopup").innerHTML = '<div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div>';
+        document.getElementById("processPopup").classList.add("show");
+      } else {
+        document.getElementById("processPopup").classList.add("show");
+      }
+    }
+  </script>
+</body>
+</html>
