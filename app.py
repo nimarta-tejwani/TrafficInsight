@@ -1,77 +1,77 @@
+from flask import Flask, render_template, request, redirect, url_for
 import os
-from flask import Flask, render_template, request, redirect, Response
-import requests
-# from predict import predict, set_path, video_src
+import pandas as pd
+from vehicle_monitoring import predict
+from flask import send_file
 
 app = Flask(__name__)
-from flask import send_file
-import logging
-import subprocess
 
-# Set the logging level to DEBUG
-app.logger.setLevel(logging.DEBUG)
-
-# Configure a stream handler to output log messages to the console
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
-app.logger.addHandler(stream_handler)
-
-
-def save_video_from_file(video_file):
-    # Create the output filename
-    output_file = "output.mp4"
-
-    # Save the uploaded video file to the current directory
-    video_file.save(output_file)
-
-    return output_file
-
-@app.route("/upload", methods=["GET"])
-def upload_video():
-    # Check if a file was uploaded
-    if "video" not in request.files:
-        return "No video file provided."
-
-    video_file = request.files["video"]
-
-    # Check if the file has a valid filename
-    if video_file.filename == "":
-        return "Invalid video filename."
-
-    # Save the video file
-    saved_file = save_video_from_file(video_file)
-
-    return f"Video saved as '{saved_file}' in the current directory."
-
+# Global variable to track processing status
+processing = False
 
 @app.route('/')
-def hello_world():  # put application's code here
+def index():
     return render_template('index.html')
 
 
-@app.route('/select_video', methods=['POST'])
-def select_video():
-    video_file = request.files['video']
-    video_path = 'my_video.mp4'  # Provide the path where you want to save the video # Build the absolute file path
-    try:
-        video_file.save(video_path)
-        print(video_file)
-        return "Video Saved"
-    except Exception as e:
-        return "Can't upload"
+@app.route('/upload', methods=['POST'])
+def upload_video():
+    if 'video' not in request.files:
+        return redirect(url_for('index'))
 
+    video = request.files['video']
+    if video.filename == '':
+        return redirect(url_for('index'))
+
+    video.save("my_video.mp4")
+
+    upload_message = "Upload Successful!"
+    return render_template('index.html', upload_message=upload_message)
+
+
+@app.route('/process')
+def process_video():
+    predict()
+    message = "Video Processed Successfully!"
+    table_html, csv_exists = display_output()
+    return render_template('index.html', message=message, table_html=table_html, csv_exists=csv_exists)
 
 
 @app.route('/download', methods=['GET'])
 def download_result():
     # File name
-    file_name = "my_video.mp4"
+    file_name = "output.csv"
 
-    # Send the file as a response
+    # Send the file as a responsef
     try:
         return send_file(file_name, as_attachment=True)
     except Exception as e:
         return str(e)
+
+
+# @app.route('/display_output')
+# def display_output():
+#     output_file_path = os.path.join(os.getcwd(), 'output.csv')  # Path to the CSV file
+#     if os.path.exists(output_file_path):
+#         # Read the CSV file into a Pandas DataFrame
+#         df = pd.read_csv(output_file_path)
+#         # Convert the DataFrame to an HTML table
+#         table_html = df.to_html(classes='table table-bordered table-striped')
+#         return render_template('index.html', table_html=table_html)
+#     else:
+#         return "Output file not found."
+
+
+def display_output():
+    output_file_path = os.path.join(os.getcwd(), 'output.csv')  # Path to the CSV file
+    if os.path.exists(output_file_path):
+        # Read the CSV file into a Pandas DataFrame
+        df = pd.read_csv(output_file_path)
+        # Convert the DataFrame to an HTML table
+        table_html = df.to_html(classes='table table-bordered table-striped')
+        return table_html, True  # Pass True to indicate that the CSV file exists
+    else:
+        return "", False 
 
 
 if __name__ == '__main__':
