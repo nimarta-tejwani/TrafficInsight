@@ -1,136 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vehicle Monitoring System</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <style>
-    .popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 300px;
-      padding: 20px;
-      background-color: #fff;
-      border-radius: 5px;
-      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-      text-align: center;
-    }
-
-    .popup.show {
-      display: block;
-    }
-  </style>
-
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!--    <script>-->
-<!--        $(document).ready(function() {-->
-<!--            $('form').submit(function(event) {-->
-<!--                event.preventDefault(); // Prevent form submission-->
-
-<!--                var formData = new FormData(this);-->
-
-<!--                $.ajax({-->
-<!--                    url: '/select_video',-->
-<!--                    type: 'POST',-->
-<!--                    data: formData,-->
-<!--                    processData: false,-->
-<!--                    contentType: false,-->
-<!--                    success: function(response) {-->
-<!--                        $('#message').text(response); // Update message element-->
-<!--                    },-->
-<!--                    error: function(xhr, status, error) {-->
-<!--                        console.error(error); // Handle error if needed-->
-<!--                    }-->
-<!--                });-->
-<!--            });-->
-<!--        });-->
-<!--    </script>-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrafficInsight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Add custom styles here if needed */
+    </style>
 </head>
 <body>
-  <header>
-    <h1 class="text-center">Vehicle Monitoring System</h1>
-  </header>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <h1 class="mb-4">TrafficInsight</h1>
+                <form action="/upload" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="video" class="form-label">Upload Video (MP4 only)</label>
+                        <input type="file" class="form-control" id="video" name="video" accept=".mp4">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+                <p class="mt-2">{{upload_message}}</p>
 
-  <div style="display: flex; align-items: center; flex-direction: column; justify-content: center; height: 70vh">
+                <form action="/process" method="GET" class="mt-4">
+                    <button type="submit" class="btn btn-success" id="process-button" onclick="showLoader()">Process Video</button>
+                </form>
 
+                <!-- Loading Spinner -->
+                <div class="text-center mt-4" id="loading-spinner" style="display: none;">
+                    <p>The video is being processed...</p>
+                    <img src="https://i.gifer.com/origin/8b/8b4d5872105584fe9e2d445bea526eb5_w200.gif" alt="Loading..." style="padding-top: 20px; width: 150px; height: 170px;">
+                </div>
 
-  <div class="container">
-    <div class="row mt-4">
-      <div class="col-lg-4">
-        <div class="card text-center">
-          <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" action="/select_video">
-              <input type="file" name="video">
-                <input type="submit" value="Upload">
-            </form>
+                <!-- Success Message -->
+                <h3 class="mt-4" id="process-completed" style="display: none;">{{message}}</h3>
+            </div>
 
-          </div>
+            <div class="col-md-6">
+                <div class="mt-4" style="padding-left:180px;">
+                    <!-- Display Output and Download Buttons -->
+                    {% if csv_exists %}
+                    <!-- <a href="/display_output" class="btn btn-info" style="margin-right: 10px;">Show Output</a> -->
+                    <a href="/download"  id="download_output_button" class="btn btn-info">Download CSV File</a>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-4">
+                    <!-- Display the table here -->
+                    <div class="table-responsive" id="table">
+                        {{ table_html | safe }}
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-        <div id="message"></div> <!-- Container for the message -->
-
-<!--      <div class="col-lg-4">-->
-<!--        <div class="card text-center">-->
-<!--          <div class="card-body">-->
-<!--            <form method="POST" enctype="multipart/form-data" action="/process_video">-->
-<!--              <input type = "submit" class="btn btn-primary" value= "Start Process"></input>-->
-<!--            </form>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--      </div>-->
-
-      <div class="col-lg-4">
-        <div class="card text-center">
-          <div class="card-body">
-
-            <form method="GET" action="/download">
-              <input type = "submit" value = "Download Output" class="btn btn-primary"></input>
-            </form>
-
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <div id="videoPopup" class="popup">
-    <p>Video has been selected!</p>
-  </div>
-
-  <div id="processPopup" class="popup">
-    <p>Please select a video first.</p>
-  </div>
-</div>
-  <footer class="mt-4">
-    <div class="container">
-      <p>Put instructions here</p>
-    </div>
-  </footer>
-
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script>
-    function selectVideo() {
-      // Perform video selection logic here
-      document.getElementById("videoPopup").classList.add("show");
-    }
-
-    function startProcess() {
-      // Perform start process logic here
-      var videoSelected = true; // Assume video has been selected
-
-      if (videoSelected) {
-        // Show spinner in the process popup
-        document.getElementById("processPopup").innerHTML = '<div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div>';
-        document.getElementById("processPopup").classList.add("show");
-      } else {
-        document.getElementById("processPopup").classList.add("show");
-      }
-    }
-  </script>
+    <!-- JavaScript to show/hide the loader -->
+    <script>
+        function showLoader() {
+            document.getElementById("process-button").style.display = "none";
+            document.getElementById("loading-spinner").style.display = "block";
+        }
+    </script>
 </body>
 </html>
