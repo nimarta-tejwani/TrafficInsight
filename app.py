@@ -42,24 +42,11 @@ def download_result():
     # File name
     file_name = "output.csv"
 
-    # Send the file as a responsef
+    # Send the file as a response
     try:
         return send_file(file_name, as_attachment=True)
     except Exception as e:
         return str(e)
-
-
-# @app.route('/display_output')
-# def display_output():
-#     output_file_path = os.path.join(os.getcwd(), 'output.csv')  # Path to the CSV file
-#     if os.path.exists(output_file_path):
-#         # Read the CSV file into a Pandas DataFrame
-#         df = pd.read_csv(output_file_path)
-#         # Convert the DataFrame to an HTML table
-#         table_html = df.to_html(classes='table table-bordered table-striped')
-#         return render_template('index.html', table_html=table_html)
-#     else:
-#         return "Output file not found."
 
 
 def display_output():
