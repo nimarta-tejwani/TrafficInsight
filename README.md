@@ -14,7 +14,7 @@ Open the terminal in the root directory
 
 Step 4:
 ````
-pip install requirements.txt
+pip install -r requirements.txt
 ````
 Step 5:
 ````
